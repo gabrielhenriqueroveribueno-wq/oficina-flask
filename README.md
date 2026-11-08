@@ -1,8 +1,8 @@
-# 🔧 AutoTech Oficina & Gerenciamento
+# AutoTech Oficina & Gerenciamento
 
 Portal web em **Flask** para uma oficina mecânica: catálogo de serviços e consulta de Ordens de Serviço (OS) pela placa do veículo.
 
-## 📁 Estrutura
+## Estrutura
 
 ```
 oficina_flask/
@@ -18,7 +18,7 @@ oficina_flask/
     └── sobre.html
 ```
 
-## 🚀 Como executar
+## Como executar
 
 ```bash
 # 1. Criar e ativar o ambiente virtual
@@ -37,7 +37,7 @@ python app.py
 
 Acesse: http://127.0.0.1:5000
 
-## 🛣️ Rotas
+## Rotas
 
 | Tipo      | Rota                 | Descrição                              |
 |-----------|----------------------|----------------------------------------|
@@ -49,7 +49,7 @@ Acesse: http://127.0.0.1:5000
 
 Placas de teste: `ABC1D23` e `XYZ9K88`.
 
-## 🧰 Tecnologias
+## Tecnologias
 
 - Python 3 + Flask
 - Jinja2 (herança de templates)
