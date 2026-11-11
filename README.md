@@ -1,6 +1,6 @@
-# AutoTech Oficina & Gerenciamento
+# AutoTech Oficina e Gerenciamento
 
-Portal web em **Flask** para uma oficina mecânica: catálogo de serviços e ordens de serviço (OS), com banco de dados **SQLite** e SQL nativo.
+Portal web em **Flask** para uma oficina mecânica: catálogo de serviços e ordens de serviço (OS), com banco de dados SQLite e SQL nativo.
 
 ## Estrutura
 
