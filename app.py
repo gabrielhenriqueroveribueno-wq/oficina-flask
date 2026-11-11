@@ -1,91 +1,117 @@
-from flask import Flask, render_template, abort
+import os
+import sqlite3
+
+from flask import Flask, abort, flash, redirect, render_template, request, url_for
+
+import db_sql
 
 app = Flask(__name__)
+app.config["SECRET_KEY"] = "dev"
+app.config["DATABASE"] = os.path.join(app.root_path, "oficina.db")
+db_sql.init_app(app)
 
-# Base de dados simulada em memória (Catálogo de Serviços)
-SERVICOS = [
-    {
-        "id": 1,
-        "nome": "Revisão Completa de Freios",
-        "preco": "R$ 380,00",
-        "tempo": "2 horas",
-        "descricao": "Substituição de pastilhas dianteiras, limpeza do sistema, sangria e troca do fluido DOT 4.",
-        "garantia": "6 meses"
-    },
-    {
-        "id": 2,
-        "nome": "Troca de Óleo e Filtros",
-        "preco": "R$ 260,00",
-        "tempo": "1 hora",
-        "descricao": "Óleo 5W30 100% sintético (4 litros) + substituição do filtro de óleo, ar do motor e cabine.",
-        "garantia": "10.000 km ou 6 meses"
-    },
-    {
-        "id": 3,
-        "nome": "Alinhamento 3D e Balanceamento",
-        "preco": "R$ 150,00",
-        "tempo": "1 hora",
-        "descricao": "Alinhamento computadorizado de direção, cambagem básica e balanceamento das 4 rodas.",
-        "garantia": "3 meses"
-    },
-    {
-        "id": 4,
-        "nome": "Diagnóstico Eletrônico via Scanner",
-        "preco": "R$ 180,00",
-        "tempo": "1h30",
-        "descricao": "Leitura completa da ECU (injeção eletrônica, ABS, Airbag), limpeza de códigos de falha e teste de bicos.",
-        "garantia": "3 meses"
-    }
-]
+STATUS = ["Aguardando", "Em manutenção", "Pronto para retirada", "Entregue"]
 
-# Base simulada de Ordens de Serviço por Placa
-ORDENS_SERVICO = {
-    "ABC1D23": {
-        "veiculo": "VW Golf GTI 2.0 TSI",
-        "cliente": "Carlos Eduardo",
-        "status": "Em manutenção (Elevador 2)",
-        "servico_atual": "Revisão Completa de Freios + Diagnóstico via Scanner",
-        "previsao_entrega": "Hoje às 17:30",
-        "total": "R$ 560,00"
-    },
-    "XYZ9K88": {
-        "veiculo": "Honda Civic Touring 1.5 Turbo",
-        "cliente": "Fernanda Souza",
-        "status": "Pronto para retirada",
-        "servico_atual": "Troca de Óleo e Filtros",
-        "previsao_entrega": "Concluído",
-        "total": "R$ 260,00"
-    }
-}
+@app.template_filter("brl")
+def brl(valor):
+    return f"R$ {valor:.2f}".replace(".", ",")
 
-# --- ROTAS FIXAS ---
+def dados_servico():
+    f = request.form
+    return f["nome"], float(f["preco"]), f["tempo"], f["descricao"], f["garantia"]
+
+def dados_ordem():
+    f = request.form
+    return (f["placa"].upper(), f["veiculo"], f["cliente"], f["status"],
+            f["previsao_entrega"], float(f["total"]), f["servico_id"] or None)
 
 @app.route("/")
 def index():
-    return render_template("index.html", servicos=SERVICOS[:2], os_exemplos=ORDENS_SERVICO.keys())
-
-@app.route("/servicos")
-def listar_servicos():
-    return render_template("servicos.html", servicos=SERVICOS)
+    return render_template("index.html", servicos=db_sql.listar_servicos()[:2])
 
 @app.route("/sobre")
 def sobre():
     return render_template("sobre.html")
 
-# --- ROTAS DINÂMICAS ---
+@app.route("/servicos")
+def listar_servicos():
+    return render_template("servicos.html", servicos=db_sql.listar_servicos())
 
 @app.route("/servico/<int:id>")
 def detalhe_servico(id):
-    servico = next((s for s in SERVICOS if s["id"] == id), None)
+    servico = db_sql.buscar_servico(id)
     if not servico:
         abort(404)
     return render_template("detalhe_servico.html", servico=servico)
 
+@app.route("/servicos/novo", methods=["GET", "POST"])
+def novo_servico():
+    if request.method == "POST":
+        try:
+            db_sql.inserir_servico(*dados_servico())
+            flash("Serviço cadastrado!")
+            return redirect(url_for("listar_servicos"))
+        except sqlite3.IntegrityError:
+            flash("Já existe um serviço com esse nome.")
+    return render_template("servico_form.html", servico=request.form)
+
+@app.route("/servico/<int:id>/editar", methods=["GET", "POST"])
+def editar_servico(id):
+    servico = db_sql.buscar_servico(id)
+    if not servico:
+        abort(404)
+    if request.method == "POST":
+        try:
+            db_sql.atualizar_servico(id, *dados_servico())
+            flash("Serviço atualizado!")
+            return redirect(url_for("listar_servicos"))
+        except sqlite3.IntegrityError:
+            flash("Já existe um serviço com esse nome.")
+    return render_template("servico_form.html", servico=servico)
+
+@app.route("/servico/<int:id>/excluir", methods=["POST"])
+def excluir_servico(id):
+    db_sql.excluir_servico(id)
+    flash("Serviço excluído.")
+    return redirect(url_for("listar_servicos"))
+
+@app.route("/ordens")
+def listar_ordens():
+    return render_template("ordens.html", ordens=db_sql.listar_ordens())
+
+@app.route("/ordens/nova", methods=["GET", "POST"])
+def nova_ordem():
+    if request.method == "POST":
+        db_sql.inserir_ordem(*dados_ordem())
+        flash("Ordem de serviço criada!")
+        return redirect(url_for("listar_ordens"))
+    return render_template("ordem_form.html", ordem={}, servicos=db_sql.listar_servicos(), status=STATUS)
+
+@app.route("/ordem/<int:id>/editar", methods=["GET", "POST"])
+def editar_ordem(id):
+    ordem = db_sql.buscar_ordem(id)
+    if not ordem:
+        abort(404)
+    if request.method == "POST":
+        db_sql.atualizar_ordem(id, *dados_ordem())
+        flash("Ordem de serviço atualizada!")
+        return redirect(url_for("listar_ordens"))
+    return render_template("ordem_form.html", ordem=ordem, servicos=db_sql.listar_servicos(), status=STATUS)
+
+@app.route("/ordem/<int:id>/excluir", methods=["POST"])
+def excluir_ordem(id):
+    db_sql.excluir_ordem(id)
+    flash("Ordem de serviço excluída.")
+    return redirect(url_for("listar_ordens"))
+
+@app.route("/os")
+def buscar_os():
+    return redirect(url_for("consultar_os", placa=request.args.get("placa", "")))
+
 @app.route("/os/<placa>")
 def consultar_os(placa):
-    placa_formatada = placa.upper()
-    ordem = ORDENS_SERVICO.get(placa_formatada)
-    return render_template("ordem_servico.html", placa=placa_formatada, ordem=ordem)
+    placa = placa.upper()
+    return render_template("ordem_servico.html", placa=placa, ordens=db_sql.buscar_ordens_por_placa(placa))
 
 if __name__ == "__main__":
     app.run(debug=True)
