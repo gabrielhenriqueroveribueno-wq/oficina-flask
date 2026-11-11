@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Serviços{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between mb-3">
+    <h1 class="h3">Serviços</h1>
+    <a href="{{ url_for('novo_servico') }}" class="btn btn-warning">Novo serviço</a>
+</div>
+<table class="table table-striped bg-white">
+    <tr><th>Nome</th><th>Preço</th><th>Tempo</th><th>Garantia</th><th></th></tr>
+    {% for s in servicos %}
+    <tr>
+        <td><a href="{{ url_for('detalhe_servico', id=s.id) }}">{{ s.nome }}</a></td>
+        <td>{{ s.preco|brl }}</td>
+        <td>{{ s.tempo }}</td>
+        <td>{{ s.garantia }}</td>
+        <td class="text-end text-nowrap">
+            <a href="{{ url_for('editar_servico', id=s.id) }}" class="btn btn-sm btn-outline-primary">Editar</a>
+            <form action="{{ url_for('excluir_servico', id=s.id) }}" method="post" class="d-inline">
+                <button class="btn btn-sm btn-outline-danger" onclick="return confirm('Excluir este serviço?')">Excluir</button>
+            </form>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

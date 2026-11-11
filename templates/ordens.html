@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Ordens de Serviço{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between mb-3">
+    <h1 class="h3">Ordens de Serviço</h1>
+    <a href="{{ url_for('nova_ordem') }}" class="btn btn-warning">Nova OS</a>
+</div>
+<table class="table table-striped bg-white">
+    <tr><th>#</th><th>Placa</th><th>Veículo</th><th>Cliente</th><th>Serviço</th><th>Status</th><th>Total</th><th></th></tr>
+    {% for o in ordens %}
+    <tr>
+        <td>{{ o.id }}</td>
+        <td><a href="{{ url_for('consultar_os', placa=o.placa) }}">{{ o.placa }}</a></td>
+        <td>{{ o.veiculo }}</td>
+        <td>{{ o.cliente }}</td>
+        <td>{{ o.servico_nome or "Serviço removido" }}</td>
+        <td>{{ o.status }}</td>
+        <td>{{ o.total|brl }}</td>
+        <td class="text-end text-nowrap">
+            <a href="{{ url_for('editar_ordem', id=o.id) }}" class="btn btn-sm btn-outline-primary">Editar</a>
+            <form action="{{ url_for('excluir_ordem', id=o.id) }}" method="post" class="d-inline">
+                <button class="btn btn-sm btn-outline-danger" onclick="return confirm('Excluir esta OS?')">Excluir</button>
+            </form>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

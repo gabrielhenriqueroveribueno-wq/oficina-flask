@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}OS {{ placa }}{% endblock %}
+{% block content %}
+<h1 class="h3">Ordens de serviço da placa {{ placa }}</h1>
+
+{% for o in ordens %}
+<div class="card mb-3">
+    <div class="card-body">
+        <h2 class="h5">OS #{{ o.id }} · {{ o.servico_nome or "Serviço removido" }}</h2>
+        <p class="mb-1"><strong>Veículo:</strong> {{ o.veiculo }}</p>
+        <p class="mb-1"><strong>Cliente:</strong> {{ o.cliente }}</p>
+        <p class="mb-1"><strong>Status:</strong> {{ o.status }}</p>
+        <p class="mb-1"><strong>Previsão de entrega:</strong> {{ o.previsao_entrega or "—" }}</p>
+        <p class="mb-0"><strong>Total:</strong> {{ o.total|brl }}</p>
+    </div>
+</div>
+{% else %}
+<div class="alert alert-warning">Nenhuma ordem de serviço encontrada para essa placa.</div>
+{% endfor %}
+
+<a href="{{ url_for('index') }}" class="btn btn-secondary">Voltar</a>
+{% endblock %}

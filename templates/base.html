@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}AutoTech Oficina{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+<nav class="navbar navbar-expand navbar-dark bg-dark mb-4">
+    <div class="container">
+        <a class="navbar-brand fw-bold" href="{{ url_for('index') }}">AutoTech</a>
+        <ul class="navbar-nav me-auto">
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('listar_servicos') }}">Serviços</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('listar_ordens') }}">Ordens de Serviço</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('sobre') }}">Sobre</a></li>
+        </ul>
+    </div>
+</nav>
+
+<main class="container">
+    {% for mensagem in get_flashed_messages() %}
+        <div class="alert alert-info">{{ mensagem }}</div>
+    {% endfor %}
+    {% block content %}{% endblock %}
+</main>
+
+<footer class="text-center text-muted py-4">AutoTech Oficina &amp; Gerenciamento</footer>
+</body>
+</html>
