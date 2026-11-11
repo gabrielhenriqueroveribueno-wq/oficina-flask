@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Ordem de Serviço{% endblock %}
+{% block content %}
+<h1 class="h3">{{ "Editar OS #" ~ ordem.id if ordem.id else "Nova ordem de serviço" }}</h1>
+<form method="post" class="card card-body">
+    <label class="form-label">Placa</label>
+    <input class="form-control mb-3" name="placa" maxlength="7" value="{{ ordem.placa }}" required>
+
+    <label class="form-label">Veículo</label>
+    <input class="form-control mb-3" name="veiculo" value="{{ ordem.veiculo }}" required>
+
+    <label class="form-label">Cliente</label>
+    <input class="form-control mb-3" name="cliente" value="{{ ordem.cliente }}" required>
+
+    <label class="form-label">Serviço</label>
+    <select class="form-select mb-3" name="servico_id">
+        <option value="">Nenhum</option>
+        {% for s in servicos %}
+            <option value="{{ s.id }}" {{ "selected" if ordem.servico_id == s.id }}>{{ s.nome }} ({{ s.preco|brl }})</option>
+        {% endfor %}
+    </select>
+
+    <label class="form-label">Status</label>
+    <select class="form-select mb-3" name="status">
+        {% for st in status %}
+            <option {{ "selected" if ordem.status == st }}>{{ st }}</option>
+        {% endfor %}
+    </select>
+
+    <label class="form-label">Previsão de entrega</label>
+    <input class="form-control mb-3" name="previsao_entrega" value="{{ ordem.previsao_entrega or '' }}">
+
+    <label class="form-label">Total (R$)</label>
+    <input class="form-control mb-3" name="total" type="number" step="0.01" min="0" value="{{ ordem.total }}" required>
+
+    <div>
+        <button class="btn btn-warning">Salvar</button>
+        <a href="{{ url_for('listar_ordens') }}" class="btn btn-link">Cancelar</a>
+    </div>
+</form>
+{% endblock %}

@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="p-5 mb-4 bg-dark text-white rounded">
+    <h1>AutoTech Oficina</h1>
+    <p class="lead">Consulte a ordem de serviço do seu veículo pela placa.</p>
+    <form class="d-flex gap-2" action="{{ url_for('buscar_os') }}" style="max-width: 400px">
+        <input class="form-control" name="placa" placeholder="ABC1D23" required>
+        <button class="btn btn-warning">Consultar</button>
+    </form>
+</div>
+
+<h2 class="h4">Serviços em destaque</h2>
+<div class="row">
+    {% for s in servicos %}
+    <div class="col-md-6 mb-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <h3 class="h5">{{ s.nome }}</h3>
+                <p>{{ s.descricao }}</p>
+                <strong>{{ s.preco|brl }}</strong>
+                <a href="{{ url_for('detalhe_servico', id=s.id) }}" class="btn btn-sm btn-outline-dark float-end">Detalhes</a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
